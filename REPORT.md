@@ -1,43 +1,15 @@
-<!--
-REPORT.md - the answer you give the client.
-
-Three headings, fixed, spelled exactly as below. The marking script looks
-for them. Two or three short paragraphs under each at most. No essay.
-
-Every number here comes from your own run_log.jsonl, and every number is
-labelled measured or estimated. A number with no label does not count.
--->
-
 # Cost
 
-<!--
-Answer: is there a cost to each question, or are they free?
+The measured average was 2.40 model calls per question paper across 5 measured runs. The measured average cost was $0.00063525 per question paper, based on the known costs recorded in the log. At that rate, the estimated cost for 1,000 papers would be $0.63525.
 
-State, with units:
-  - average number of model calls per question paper
-  - average cost per question paper, in USD
-  - what 1,000 papers would cost
-  - the input and output prices you used, per million tokens, and where
-    they came from
--->
+I used an estimated paid-tier price of $0.75 per million input tokens and $3.75 per million output tokens. These prices are the hypothetical prices configured for this lab; the Gemini free tier used for the runs did not charge for these calls.
 
 # Speed
 
-<!--
-Answer: does it feel slow, and why?
+The measured median latency was 2,568 ms per model call, and the measured p95 latency was 11,413.2 ms. The measured slowest call was 11,455 ms.
 
-State, in milliseconds or seconds:
-  - median latency per call
-  - p95 latency per call
-  - the slowest call you saw, and whether the slow ones were retries
--->
+The slowest calls were not all retries: the 11,455 ms call was a first attempt, while the 11,379 ms call was a retry that eventually succeeded. The rate-limit retries were generally faster, ranging from 2,257 ms to 5,336 ms per call.
 
 # Method
 
-<!--
-How you got the numbers above, in one short paragraph.
-
-Say which numbers are measured and which are estimated, how many runs the
-figures are drawn from, and how you estimated tokens if your provider did
-not report usage.
--->
+The figures are measured from 12 model-call log entries across 5 question-paper runs. Latency, token usage, and the two successful-call costs were reported by the provider and recorded as measured; failed calls had unknown token usage and cost, so they were recorded as null rather than zero. No token estimation was needed for these real-provider calls because `tokens_estimated` was false.

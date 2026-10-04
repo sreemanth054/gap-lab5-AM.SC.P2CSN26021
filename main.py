@@ -76,8 +76,34 @@ def looks_like_refusal(text: str) -> bool:
 
 
 def build_prompt(topic: str) -> str:
-    # Paste your existing prompt f-string here, unchanged, and return it.
-    return f"""..."""
+    return f"""
+Generate exactly five multiple-choice questions about: {topic}
+
+Return ONLY a JSON object in this exact structure:
+
+{{
+  "questions": [
+    {{
+      "question": "question text",
+      "options": [
+        "option 1",
+        "option 2",
+        "option 3",
+        "option 4"
+      ],
+      "answer_index": 0
+    }}
+  ]
+}}
+
+Rules:
+- There must be exactly five questions.
+- Each question must have exactly four options.
+- answer_index must be 0, 1, 2, or 3.
+- answer_index identifies the correct option in the options list.
+- Do not use Markdown code fences.
+- Do not add explanations or text before or after the JSON.
+"""
 
 
 def call_model(client, model: str, prompt: str) -> dict:

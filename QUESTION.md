@@ -1,7 +1,4 @@
-Which of the four outcomes did you find hardest to trigger, and what does that tell you about your validation? 
-
-The hardest outcome for me to handle was refused. The malformed, bad-shape, and empty responses were easier because the problem was clear from the response itself. The refusal case was different because there is no reliable flag to tell the program that the model refused, so I had to decide how to identify it.
-
-I chose to check for a few common refusal phrases before trying to extract the JSON. This could sometimes mistake a normal response for a refusal, but it allows the program to return refused separately instead of treating every non-JSON response as invalid_output.
-
-Running the stub tests showed me that validation needs to handle both incorrect JSON and responses that are valid JSON but don't follow the required structure.
+Which of the four outcomes did you find hardest to trigger, and what does that tell you about your validation?
+The hardest outcome for me to handle was error. The malformed, bad-shape, and empty responses were easier because the problem was clear from the response itself. The error case was different because the model call itself can fail, so I had to make sure the program could recover without making unlimited calls.
+I added bounded retries for errors, with up to three attempts, while also making sure every attempt was logged. I also added a separate repair retry for invalid output, so malformed responses get exactly one additional attempt instead of being retried indefinitely.
+Running the Checkpoint 4 stub tests showed me that validation needs to handle both incorrect model output and failures during the model call, while keeping retries bounded and ensuring every attempt is recorded.
