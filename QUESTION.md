@@ -1,4 +1,3 @@
-Which of the four outcomes did you find hardest to trigger, and what does that tell you about your validation?
-The hardest outcome for me to handle was error. The malformed, bad-shape, and empty responses were easier because the problem was clear from the response itself. The error case was different because the model call itself can fail, so I had to make sure the program could recover without making unlimited calls.
-I added bounded retries for errors, with up to three attempts, while also making sure every attempt was logged. I also added a separate repair retry for invalid output, so malformed responses get exactly one additional attempt instead of being retried indefinitely.
-Running the Checkpoint 4 stub tests showed me that validation needs to handle both incorrect model output and failures during the model call, while keeping retries bounded and ensuring every attempt is recorded.
+What is your average number of model calls per question paper, and what does the gap between that number and 1.0 tell you about your prompt?
+
+My average was 2.4 model calls per question paper. The gap from 1.0 shows that my prompt did not always produce a usable response on the first attempt. Some calls needed retries because of model errors and rate limits, so the higher average reflects both prompt/output issues and transient provider failures.

@@ -16,3 +16,16 @@ stub:error	3
 stub:ok	3
 stub:fenced	3
 stub:preamble	3
+stub:ok	622
+stub:fenced	622
+stub:preamble	622
+stub:malformed	622
+stub:malformed	712
+stub:badshape	622
+stub:badshape	712
+stub:empty	622
+stub:empty	712
+stub:refused	622
+stub:error	622
+stub:error	622
+stub:error	622
