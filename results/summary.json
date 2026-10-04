@@ -1,0 +1,163 @@
+[
+  {
+    "repo": "gap-lab5-AM.SC.P2CSN26021",
+    "awarded": 4.3,
+    "total": 5.0,
+    "checks": [
+      {
+        "group": "A",
+        "name": "Required files present",
+        "marks": 0.3,
+        "passed": false,
+        "note": "missing: samples/run_log_sample.jsonl"
+      },
+      {
+        "group": "A",
+        "name": "client.py unmodified",
+        "marks": 0.2,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "A",
+        "name": ".env and run_log.jsonl ignored, neither ever committed",
+        "marks": 0.3,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "A",
+        "name": "SPEC.md has its six headings, REPORT.md its three",
+        "marks": 0.2,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "A",
+        "name": "Git: >=5 commits and the lab-5-submission tag",
+        "marks": 0.2,
+        "passed": false,
+        "note": "commits=3, tag=no"
+      },
+      {
+        "group": "B",
+        "name": "stub:ok -> ok (exit 0)",
+        "marks": 0.125,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "B",
+        "name": "stub:fenced -> ok (exit 0)",
+        "marks": 0.125,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "B",
+        "name": "stub:preamble -> ok (exit 0)",
+        "marks": 0.125,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "B",
+        "name": "stub:malformed -> invalid_output (exit 1)",
+        "marks": 0.125,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "B",
+        "name": "stub:badshape -> invalid_output (exit 1)",
+        "marks": 0.125,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "B",
+        "name": "stub:empty -> invalid_output (exit 1)",
+        "marks": 0.125,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "B",
+        "name": "stub:refused -> refused (exit 1)",
+        "marks": 0.125,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "B",
+        "name": "stub:error -> error (exit 1)",
+        "marks": 0.125,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "C",
+        "name": "run_log.jsonl written, one parseable JSON object per line",
+        "marks": 0.3,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "C",
+        "name": "Every line carries the nine fields, correctly typed",
+        "marks": 0.4,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "C",
+        "name": "The last line's status matches the word printed",
+        "marks": 0.3,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "C",
+        "name": "One run_id per run of main.py",
+        "marks": 0.3,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "D",
+        "name": "stub:flaky -> retried, ended ok, every attempt logged",
+        "marks": 0.4,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "D",
+        "name": "stub:ratelimit -> capped at 2-3 attempts, each logged, ends error",
+        "marks": 0.3,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "D",
+        "name": "stub:malformed -> exactly one repair retry, both lines invalid_output",
+        "marks": 0.3,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "E",
+        "name": "empty topic -> exit 2, no model call, no log line",
+        "marks": 0.3,
+        "passed": true,
+        "note": ""
+      },
+      {
+        "group": "F",
+        "name": "samples/run_log_sample.jsonl: >=20 good lines, nothing secret",
+        "marks": 0.2,
+        "passed": false,
+        "note": "samples/run_log_sample.jsonl missing"
+      }
+    ]
+  }
+]

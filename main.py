@@ -3,7 +3,7 @@ import re
 import sys
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
-
+from stub_client import StubError, StubRateLimitError 
 from client import get_client, get_model
 from observability import Timer, estimate_cost, estimate_tokens, log_call
 
@@ -154,16 +154,50 @@ def record(result: dict, status: str, **extra):
 def generate(topic: str):
     client = get_client()
     model = get_model()
+    prompt = build_prompt(topic)
 
-    result = call_model(client, model, build_prompt(topic))
+    for attempt in range(1, 4):
+        result = call_model(client, model, prompt)
 
-    if result["error"] is not None:
-        record(result, "error", error_type=type(result["error"]).__name__)
-        return "error", None
+        if result["error"] is None:
+            status, paper = classify(result["text"])
+            record(result, status)
 
-    status, paper = classify(result["text"])
-    record(result, status)
-    return status, paper
+            if status == "refused":
+                return "refused", None
+            if status == "invalid_output" and attempt == 1:
+                prompt = (
+                    build_prompt(topic) +
+                    "\n\nYour previous response was invalid. "
+                    "Return ONLY valid JSON matching the required schema."
+                )
+                continue
+            return status, paper
+
+        record(
+            result,
+            "error",
+            error_type=type(result["error"]).__name__,
+        )
+
+        if attempt == 3:
+            return "error", None
+
+        delay = min(2 ** attempt, 8)
+
+        retry_after = getattr(result["error"], "retry_after", None)
+        if retry_after is not None:
+            delay = max(delay, retry_after)
+
+        import random
+        import time
+
+        delay += random.uniform(0, 1)
+        delay = min(delay, 8)
+
+        time.sleep(delay)
+
+    return "error", None
 
 
 def main():
