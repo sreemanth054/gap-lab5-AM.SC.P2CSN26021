@@ -48,16 +48,18 @@ A successful generation should produce five valid questions and end with `ok`.
 
 Each stub mode is run on its own. Before each run, delete run_log.jsonl so the line count is for that run only. Every check asserts on shape (last line, exit code, number of log lines, keys present), never on exact model text.
 
-`python main.py "stub:ok"` → `ok`, exit code 0, 1 log line
-`python main.py "stub:fenced"` → `ok`, exit code 0, 1 log line
-`python main.py "stub:preamble"` → `ok`, exit code 0, 1 log line
-`python main.py "stub:malformed"` → `invalid_output`, exit code 1, 2 log lines
-`python main.py "stub:badshape"` → `invalid_output`, exit code 1, 2 log lines
-`python main.py "stub:empty"` → `invalid_output`, exit code 1, 2 log lines
-`python main.py "stub:refused"` → `refused`, exit code 1, 1 log line
-`python main.py "stub:error"` → `error`, exit code 1, 2 or 3 log lines, all with status error
-`python main.py "stub:flaky"` → `ok`, exit code 0, 2 log lines (first status error, then ok)
-`python main.py "stub:ratelimit"` → `error`, exit code 1, 2 or 3 log lines, all with status error
+Each stub mode is run with the environment variables set on the command line, after deleting run_log.jsonl so the line count is for that run only. Every check asserts on shape (last line, exit code, number of log lines), never on exact model text.
+
+`LLM_BASE_URL=local://stub LLM_MODEL=stub:ok python main.py "photosynthesis"` → `ok`, exit code 0, 1 log line
+`LLM_BASE_URL=local://stub LLM_MODEL=stub:fenced python main.py "photosynthesis"` → `ok`, exit code 0, 1 log line
+`LLM_BASE_URL=local://stub LLM_MODEL=stub:preamble python main.py "photosynthesis"` → `ok`, exit code 0, 1 log line
+`LLM_BASE_URL=local://stub LLM_MODEL=stub:malformed python main.py "photosynthesis"` → `invalid_output`, exit code 1, 2 log lines
+`LLM_BASE_URL=local://stub LLM_MODEL=stub:badshape python main.py "photosynthesis"` → `invalid_output`, exit code 1, 2 log lines
+`LLM_BASE_URL=local://stub LLM_MODEL=stub:empty python main.py "photosynthesis"` → `invalid_output`, exit code 1, 2 log lines
+`LLM_BASE_URL=local://stub LLM_MODEL=stub:refused python main.py "photosynthesis"` → `refused`, exit code 1, 1 log line
+`LLM_BASE_URL=local://stub LLM_MODEL=stub:error python main.py "photosynthesis"` → `error`, exit code 1, 2 or 3 log lines, all with status error
+`LLM_BASE_URL=local://stub LLM_MODEL=stub:flaky python main.py "photosynthesis"` → `ok`, exit code 0, 2 log lines (first status error, then ok)
+`LLM_BASE_URL=local://stub LLM_MODEL=stub:ratelimit python main.py "photosynthesis"` → `error`, exit code 1, 2 or 3 log lines, all with status error
 
 Log shape, checked after any run:
 - Every line in run_log.jsonl parses as JSON.

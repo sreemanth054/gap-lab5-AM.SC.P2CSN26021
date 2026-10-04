@@ -5,7 +5,10 @@ import sys
 from pydantic import BaseModel, Field, ValidationError, model_validator
 
 from client import get_client, get_model
+from observability import Timer, estimate_cost, estimate_tokens, log_call
 
+TEMPERATURE = 0.7
+MAX_TOKENS = 4096
 
 class Question(BaseModel):
     question: str = Field(min_length=5, max_length=500)
@@ -72,50 +75,95 @@ def looks_like_refusal(text: str) -> bool:
     return any(re.search(pattern, lower_text) for pattern in refusal_patterns)
 
 
-def generate_questions(topic: str):
+def build_prompt(topic: str) -> str:
+    # Paste your existing prompt f-string here, unchanged, and return it.
+    return f"""..."""
+
+
+def call_model(client, model: str, prompt: str) -> dict:
+    """Make ONE model call and time it. It does not log; it reports what happened."""
+    error = None
+    response = None
+
+    with Timer() as timer:
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=TEMPERATURE,
+                max_tokens=MAX_TOKENS,
+            )
+        except Exception as exc:
+            error = exc
+
+    if error is not None:
+        # The call never completed, so tokens and cost are unknown: None, not 0.
+        return {
+            "error": error, "text": "", "model": model,
+            "prompt_tokens": None, "completion_tokens": None,
+            "estimated": False, "latency_ms": timer.ms,
+        }
+
+    text = response.choices[0].message.content or ""
+    usage = getattr(response, "usage", None)
+    prompt_tokens = getattr(usage, "prompt_tokens", None)
+    completion_tokens = getattr(usage, "completion_tokens", None)
+    estimated = False
+
+    # Usage missing or zeroed: fall back to our own estimate and say so.
+    if (prompt_tokens is None or completion_tokens is None
+            or (prompt_tokens == 0 and completion_tokens == 0)):
+        prompt_tokens = estimate_tokens(prompt)
+        completion_tokens = estimate_tokens(text)
+        estimated = True
+
+    return {
+        "error": None, "text": text,
+        "model": getattr(response, "model", None) or model,
+        "prompt_tokens": prompt_tokens, "completion_tokens": completion_tokens,
+        "estimated": estimated, "latency_ms": timer.ms,
+    }
+
+
+def classify(text: str):
+    """Turn a reply into (status, paper). Status is ok, invalid_output or refused."""
+    if not text.strip():
+        return "invalid_output", None
+
+    try:
+        data = extract_json(text)
+        return "ok", QuestionPaper.model_validate(data)
+    except (json.JSONDecodeError, ValidationError):
+        # Only call it a refusal if the reply is not usable JSON.
+        if looks_like_refusal(text):
+            return "refused", None
+        return "invalid_output", None
+
+
+def record(result: dict, status: str, **extra):
+    """Write exactly one log line for one model call."""
+    cost = estimate_cost(result["prompt_tokens"], result["completion_tokens"])
+    log_call(
+        status, result["model"],
+        result["prompt_tokens"], result["completion_tokens"],
+        result["latency_ms"], cost,
+        tokens_estimated=result["estimated"], **extra,
+    )
+
+
+def generate(topic: str):
     client = get_client()
     model = get_model()
 
-    prompt = f"""
-Generate exactly five multiple-choice questions about: {topic}
+    result = call_model(client, model, build_prompt(topic))
 
-Return ONLY a JSON object in this exact structure:
+    if result["error"] is not None:
+        record(result, "error", error_type=type(result["error"]).__name__)
+        return "error", None
 
-{{
-  "questions": [
-    {{
-      "question": "question text",
-      "options": [
-        "option 1",
-        "option 2",
-        "option 3",
-        "option 4"
-      ],
-      "answer_index": 0
-    }}
-  ]
-}}
-
-Rules:
-- There must be exactly five questions.
-- Each question must have exactly four options.
-- answer_index must be 0, 1, 2, or 3.
-- answer_index identifies the correct option in the options list.
-- Do not use Markdown code fences.
-- Do not add explanations or text before or after the JSON.
-"""
-
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ],
-    )
-
-    return response.choices[0].message.content or ""
+    status, paper = classify(result["text"])
+    record(result, status)
+    return status, paper
 
 
 def main():
@@ -131,34 +179,18 @@ def main():
         sys.exit(2)
 
     try:
-        raw_response = generate_questions(topic)
-
-        if not raw_response.strip():
-            print("invalid_output")
-            sys.exit(1)
-
-        if looks_like_refusal(raw_response):
-            print("refused")
-            sys.exit(1)
-
-        data = extract_json(raw_response)
-        result = QuestionPaper.model_validate(data)
-
-        print(json.dumps(result.model_dump(), indent=2))
-        print("ok")
-        sys.exit(0)
-
-    except ValidationError:
-        print("invalid_output")
-        sys.exit(1)
-
-    except json.JSONDecodeError:
-        print("invalid_output")
-        sys.exit(1)
-
+        status, paper = generate(topic)
     except Exception:
         print("error")
         sys.exit(1)
+
+    if status == "ok":
+        print(json.dumps(paper.model_dump(), indent=2))
+        print("ok")
+        sys.exit(0)
+
+    print(status)
+    sys.exit(1)
 
 
 if __name__ == "__main__":
